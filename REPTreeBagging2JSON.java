@@ -44,44 +44,51 @@ public class REPTreeBagging2JSON {
 		ArrayList<Object> q = new ArrayList<>();
 		ArrayList<Integer> attribute = new ArrayList<>();
 		ArrayList<Double> splitPoint = new ArrayList<>();
-		ArrayList<Integer> IDLeft = new ArrayList<>();
-		ArrayList<Integer> IDRight = new ArrayList<>();
+		ArrayList<ArrayList<Integer>> childrenID = new ArrayList<ArrayList<Integer>>();
 		int node_count = 0;
 		int node_dequeue = 0;
 		q.add(n);
 		node_count++;
-		// System.out.println(obj.getTree(0).toString());
-		while (node_dequeue < node_count) {
+		
+        while (node_dequeue < node_count) {
 			n = q.get(node_dequeue);
 			if ((int) fFeature.get(n) >= 0) {
 				attribute.add((int) fFeature.get(n));
 				splitPoint.add((double) fThreshold.get(n));
-				IDLeft.add(node_count);
-				IDRight.add(node_count+1);
-				q.add(((Object[]) fChildren.get(n))[0]);
-				q.add(((Object[]) fChildren.get(n))[1]);
-				node_count += 2;
+                Object[] children = (Object[]) fChildren.get(n);
+                ArrayList<Integer> lstChildren = new ArrayList<>();
+                for (int i = 0; i < children.length; i++) {
+				    q.add(children[i]);
+                    lstChildren.add(node_count + i);
+                }
+				childrenID.add(lstChildren);
+				node_count += children.length;
 			} else {
 				attribute.add(-1);
 				splitPoint.add(-1.0);
-				IDLeft.add(-1);
-				IDRight.add(-1);
+				childrenID.add(new ArrayList<Integer>());
 			}
 			node_dequeue++;
 		}
-		double[] cnt0 = getCount(fFeature, fClassDistribution, q, IDLeft, IDRight, 0);
-		double[] cnt1 = getCount(fFeature, fClassDistribution, q, IDLeft, IDRight, 1);
-		pw.print("{\"children_left\": [");
+        // Write JSON
+		double[] cnt0 = getCount(fFeature, fClassDistribution, q, childrenID, 0);
+		double[] cnt1 = getCount(fFeature, fClassDistribution, q, childrenID, 1);
+		pw.print("{\"children\": [");
 		for (int i = 0; i < q.size()-1; i++) {
-			pw.print(IDLeft.get(i) + ",");
+            pw.print("[");
+			ArrayList<Integer> lstChildren = childrenID.get(i);
+            for (int j = 0; j < lstChildren.size()-1; j++) {
+                pw.print(lstChildren.get(j) + ",");
+            }
+            pw.print(lstChildren.get(lstChildren.size()-1) + "],");
 		}
-		pw.print(IDLeft.get(q.size()-1) + "],\n");
+        pw.print("[");
+        ArrayList<Integer> lstChildren = childrenID.get(q.size()-1);
+        for (int j = 0; j < lstChildren.size()-1; j++) {
+            pw.print(lstChildren.get(j) + ",");
+        }
+        pw.print(lstChildren.get(lstChildren.size()-1) + "]],\n");
 
-		pw.print("\"children_right\": [");
-		for (int i = 0; i < q.size()-1; i++) {
-			pw.print(IDRight.get(i) + ",");
-		}
-		pw.print(IDRight.get(q.size()-1) + "],\n");
 		pw.print("\"feature\": [");
 		for (int i = 0; i < q.size()-1; i++) {
 			pw.print(attribute.get(i) + ",");
@@ -106,14 +113,18 @@ public class REPTreeBagging2JSON {
 		pw.print("]\n");
 		pw.close();
 	}
-	private static double[] getCount(Field fFeature, Field fClassDistribution, ArrayList<Object> q, ArrayList<Integer> idL, ArrayList<Integer> idR, int c) throws IllegalArgumentException, IllegalAccessException {
+	private static double[] getCount(Field fFeature, Field fClassDistribution, ArrayList<Object> q, ArrayList<ArrayList<Integer>> childrenID, int c) throws IllegalArgumentException, IllegalAccessException {
 		int sz = q.size();
 		double[] ret = new double[sz];
 		int i = sz - 1;
 		while (i >= 0) {
 			Object t = q.get(i);
 			if ((int) fFeature.get(t) >= 0) {
-				ret[i] = ret[idL.get(i)] + ret[idR.get(i)];
+				ret[i] = 0;
+                ArrayList<Integer> lstChildren = childrenID.get(i);
+                for (int j = 0; j < lstChildren.size(); j++) {
+                    ret[i] += ret[lstChildren.get(j)];
+                }
 			} else {
 				ret[i] = ((double[]) fClassDistribution.get(t))[c];
 			}
