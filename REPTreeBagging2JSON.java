@@ -77,18 +77,25 @@ public class REPTreeBagging2JSON {
 		for (int i = 0; i < q.size()-1; i++) {
             pw.print("[");
 			ArrayList<Integer> lstChildren = childrenID.get(i);
+            if (lstChildren.size() > 0) {
+                for (int j = 0; j < lstChildren.size()-1; j++) {
+                    pw.print(lstChildren.get(j) + ",");
+                }
+                pw.print(lstChildren.get(lstChildren.size()-1) + "],");
+		    } else {
+                pw.print("],");
+            }
+        }
+        pw.print("[");
+        ArrayList<Integer> lstChildren = childrenID.get(q.size()-1);
+        if (lstChildren.size() > 0) {
             for (int j = 0; j < lstChildren.size()-1; j++) {
                 pw.print(lstChildren.get(j) + ",");
             }
-            pw.print(lstChildren.get(lstChildren.size()-1) + "],");
-		}
-        pw.print("[");
-        ArrayList<Integer> lstChildren = childrenID.get(q.size()-1);
-        for (int j = 0; j < lstChildren.size()-1; j++) {
-            pw.print(lstChildren.get(j) + ",");
+            pw.print(lstChildren.get(lstChildren.size()-1) + "]],\n");
+        } else {
+            pw.print("]],\n");
         }
-        pw.print(lstChildren.get(lstChildren.size()-1) + "]],\n");
-
 		pw.print("\"feature\": [");
 		for (int i = 0; i < q.size()-1; i++) {
 			pw.print(attribute.get(i) + ",");
