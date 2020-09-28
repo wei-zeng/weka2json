@@ -1,7 +1,7 @@
 # weka2json
-A utility to convert a pretrained Weka REPtree bagging model to JSON format, as used in [ObfusX](https://github.com/wei-zeng/obfusX) project.
+A utility to convert a pretrained [Weka](https://www.cs.waikato.ac.nz/ml/weka/) REPtree bagging model to JSON format, as used in [ObfusX](https://github.com/wei-zeng/obfusX) project.
 
-Currently it only supports Weka bagging model with REPtree as the base learner.
+Currently it only supports Weka [bagging model](https://weka.sourceforge.io/doc.dev/weka/classifiers/meta/Bagging.html) with [REPtree](https://weka.sourceforge.io/doc.dev/weka/classifiers/trees/REPTree.html) as the base learner.
 
 ## Requirements
 - Weka >= 3.8
